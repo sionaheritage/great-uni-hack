@@ -22,6 +22,8 @@ For automatic server restarts while editing, run `npm run dev`.
 - `backend/server.js` serves the frontend and provides `POST /api/recommendations`, `POST /api/projection`, and `GET /api/health`.
 - `backend/database.js` creates a local SQLite database at `backend/data/savings.sqlite` and loads or refreshes it from `backend/seed-accounts.sql` each time the server starts. The generated database file is ignored by Git.
 
+Accounts whose rates still need checking are stored with a blank rate, shown as “Rate to check,” and aren’t used for savings projections. Regular savers aren’t recommended because the questionnaire doesn’t ask how much someone can add each month.
+
 The supplied account list can become outdated. Check rates, access rules, eligibility, and product terms with each provider before opening an account. Projections are illustrations based on the listed rates and do not account for tax or future rate changes.
 
 The server reads secrets from the ignored `.env` file. Set `ANTHROPIC_API_KEY` there to enable the Insights chat; the key is used only by the backend and must not be added to source code or committed.

@@ -343,6 +343,238 @@ VALUES
     'Minimum opening deposit £500.',
     'https://www.santander.co.uk/personal/savings-and-isas',
     '2026-11-06'
+),
+
+-- =========================================
+-- NATWEST
+-- =========================================
+
+(
+    'NatWest',
+    'Digital Regular Saver',
+    'Regular saver',
+    5.25, 1.00, NULL, NULL, 'Variable',
+    '5.25% AER on first £5,000 and 1.00% above £5,000. Save £1-£150 monthly. Instant access. Supports round-ups and savings goals.',
+    1, NULL, 150,
+    'Requires NatWest current account and eligible digital banking access.',
+    'https://www.natwest.com/savings/digital-regular-saver.html',
+    '2026-11-07'
+),
+
+(
+    'NatWest',
+    'Flexible Saver',
+    'Easy access',
+    1.00, NULL, NULL, NULL, 'Variable',
+    'Instant access. Interest paid monthly. Rate applies to balances up to £24,999.',
+    1, NULL, NULL,
+    'Subject to NatWest account eligibility.',
+    'https://www.natwest.com/savings.html',
+    '2026-11-07'
+),
+
+(
+    'NatWest',
+    'Defined Access Saver',
+    'Easy access',
+    2.50, NULL, NULL, NULL, 'Variable',
+    '2.50% AER with 0-3 withdrawals per calendar year. Lower rate applies after 3 withdrawals.',
+    1, 3000000, NULL,
+    'Subject to NatWest eligibility.',
+    'https://www.natwest.com/savings.html',
+    '2026-11-07'
+),
+
+(
+    'NatWest',
+    'Fixed Term Savings Account',
+    'Fixed-term',
+    4.11, NULL, NULL, 12, 'Fixed',
+    '4.11% AER for balances £1-£99,999. 4.20% AER for balances £100,000-£3m. Monthly interest and maturity payment. Early closure charges may apply.',
+    1, 3000000, NULL,
+    'UK residents aged 16 or over. Existing NatWest customers can apply.',
+    'https://www.natwest.com/savings/fixed-term-savings-account.html',
+    '2026-11-07'
+),
+
+(
+    'NatWest',
+    'Fixed Rate ISA',
+    'Cash ISA',
+    4.72, NULL, NULL, 12, 'Fixed',
+    'Tax-free interest. One-year fixed term. ISA transfers accepted subject to terms. Early closure may incur a charge.',
+    1000, NULL, NULL,
+    'Must be 18 or over and UK resident for tax purposes.',
+    'https://www.natwest.com/savings.html',
+    '2026-11-07'
+),
+
+(
+    'NatWest',
+    'Cash ISA',
+    'Cash ISA',
+    1.15, 2.45, NULL, NULL, 'Variable',
+    'Instant access and tax-free interest. 1.15% AER on balances below £25,000 and 2.45% on balances £25,000 or above.',
+    1, NULL, NULL,
+    'Must be 18 or over, UK resident for tax purposes and an existing NatWest current account customer.',
+    'https://www.natwest.com/savings/isa-overview/cash-isa.html',
+    '2026-11-07'
+),
+
+-- =========================================
+-- LLOYDS
+-- =========================================
+
+(
+    'Lloyds Bank',
+    'Club Lloyds Monthly Saver',
+    'Regular saver',
+    6.25, NULL, NULL, 12, 'Fixed',
+    'Fixed rate for 12 months. Deposit £25-£250 monthly. Unlimited withdrawals without interest penalty. Converts to Standard Saver after maturity.',
+    25, NULL, 250,
+    'Requires qualifying Club Lloyds current account. UK resident aged 18 or over. One account per customer.',
+    'https://www.lloydsbank.com/savings/club-lloyds-monthly-saver.html',
+    '2026-11-07'
+),
+
+(
+    'Lloyds Bank',
+    'Club Lloyds Advantage Saver',
+    'Easy access',
+    3.00, 0.65, 12, 12, 'Variable',
+    '3.00% AER with two or fewer withdrawals. 0.65% AER from the third withdrawal onwards during the account year. Instant access.',
+    1, NULL, NULL,
+    'Requires qualifying Club Lloyds current account.',
+    'https://www.lloydsbank.com/savings/club-lloyds.html',
+    '2026-11-07'
+),
+
+(
+    'Lloyds Bank',
+    'Club Lloyds Saver',
+    'Easy access',
+    0.95, NULL, NULL, 12, 'Variable',
+    'Tiered interest: 0.95% on balances below £25,000; 1.10% on £25,000-£99,999; 1.20% on £100,000 or more. Instant withdrawals.',
+    1, NULL, NULL,
+    'Requires qualifying Club Lloyds current account.',
+    'https://www.lloydsbank.com/savings/club-lloyds.html',
+    '2026-11-07'
+),
+
+(
+    'Lloyds Bank',
+    'Cash ISA Saver',
+    'Cash ISA',
+    0.75, NULL, NULL, 12, 'Variable',
+    'Tax-free interest. Tiered rates: 0.75%, 0.90% and 1.00% according to balance. Additional 0.20% for qualifying Club Lloyds, Premier or Private Banking customers.',
+    1, NULL, NULL,
+    'UK resident and eligible ISA customer.',
+    'https://www.lloydsbank.com/savings/club-lloyds.html',
+    '2026-11-07'
+),
+
+-- =========================================
+-- HALIFAX
+-- =========================================
+
+(
+    'Halifax',
+    'Reward Bonus Saver',
+    'Easy access',
+    3.00, 0.65, NULL, 12, 'Variable',
+    '3.00% AER if no more than two withdrawals are made in 12 months. 0.65% applies from the month of the third withdrawal. Monthly interest.',
+    1, NULL, NULL,
+    'Requires qualifying Halifax current account. UK resident aged 18 or over.',
+    'https://www.halifax.co.uk/savings/easy-access/reward-bonus-saver.html',
+    '2026-11-07'
+),
+
+(
+    'Halifax',
+    'Regular Saver',
+    'Regular saver',
+    NULL, NULL, NULL, NULL, NULL,
+    'Regular monthly savings product. Current rate and monthly deposit limits require verification against Halifax rate sheet.',
+    NULL, NULL, NULL,
+    'Check Halifax eligibility and current product terms.',
+    'https://www.halifax.co.uk/savings/help-guidance/interest-rates.html',
+    '2026-11-07'
+),
+
+(
+    'Halifax',
+    'Fixed Saver',
+    'Fixed-term',
+    NULL, NULL, NULL, NULL, 'Fixed',
+    'Fixed interest for an agreed term. Current issue rate requires verification against Halifax rate sheet.',
+    NULL, NULL, NULL,
+    'Check current Halifax issue availability and eligibility.',
+    'https://www.halifax.co.uk/savings/help-guidance/interest-rates.html',
+    '2026-11-07'
+),
+
+(
+    'Halifax',
+    'ISA Saver Fixed',
+    'Cash ISA',
+    NULL, NULL, NULL, NULL, 'Fixed',
+    'Tax-free fixed-rate savings. Current issue rate requires verification against Halifax rate sheet.',
+    NULL, NULL, NULL,
+    'Must meet ISA eligibility requirements.',
+    'https://www.halifax.co.uk/savings/help-guidance/interest-rates.html',
+    '2026-11-07'
+),
+
+-- =========================================
+-- HSBC
+-- =========================================
+
+(
+    'HSBC',
+    'Regular Saver',
+    'Regular saver',
+    5.00, NULL, NULL, 12, 'Fixed',
+    '5.00% fixed AER for 12 months. Deposit £25-£250 monthly. No partial withdrawals. Unused monthly allowance can be carried forward. Maturity balance transfers to Flexible Saver or Premier Savings.',
+    25, 3000, 250,
+    'Must be aged 18 or over and hold an HSBC current account throughout the term.',
+    'https://www.hsbc.co.uk/savings/products/regular-saver/',
+    '2026-11-07'
+),
+
+(
+    'HSBC',
+    'Flexible Saver',
+    'Easy access',
+    NULL, NULL, NULL, NULL, 'Variable',
+    'Easy-access savings product. Current rate needs verification against HSBC published rate sheet.',
+    NULL, NULL, NULL,
+    'Subject to HSBC account eligibility.',
+    'https://www.hsbc.co.uk/savings/',
+    '2026-11-07'
+),
+
+(
+    'HSBC',
+    'Fixed Rate Saver',
+    'Fixed-term',
+    NULL, NULL, NULL, NULL, 'Fixed',
+    'Fixed interest savings product. Current issue rates and terms require verification.',
+    NULL, NULL, NULL,
+    'Subject to HSBC product eligibility and issue availability.',
+    'https://www.hsbc.co.uk/savings/',
+    '2026-11-07'
+),
+
+(
+    'HSBC',
+    'Cash ISA',
+    'Cash ISA',
+    NULL, NULL, NULL, NULL, 'Variable',
+    'Tax-free savings. Current easy-access rate requires verification against HSBC published rate sheet.',
+    NULL, NULL, NULL,
+    'Must meet UK ISA eligibility requirements.',
+    'https://www.hsbc.co.uk/savings/isas/',
+    '2026-11-07'
 )
 
 ON CONFLICT (bank, account_name)

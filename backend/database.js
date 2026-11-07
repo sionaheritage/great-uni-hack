@@ -14,11 +14,11 @@ database.exec(`
     bank TEXT NOT NULL,
     account_name TEXT NOT NULL,
     account_type TEXT NOT NULL,
-    interest_rate_1_year REAL NOT NULL CHECK (interest_rate_1_year >= 0),
+    interest_rate_1_year REAL CHECK (interest_rate_1_year IS NULL OR interest_rate_1_year >= 0),
     interest_rate_2 REAL CHECK (interest_rate_2 IS NULL OR interest_rate_2 >= 0),
     rate_change_after_months INTEGER CHECK (rate_change_after_months IS NULL OR rate_change_after_months > 0),
     account_term_months INTEGER CHECK (account_term_months IS NULL OR account_term_months > 0),
-    rate_type TEXT NOT NULL,
+    rate_type TEXT,
     additional_perks TEXT,
     minimum_deposit REAL CHECK (minimum_deposit IS NULL OR minimum_deposit >= 0),
     maximum_balance REAL CHECK (maximum_balance IS NULL OR maximum_balance > 0),
@@ -28,6 +28,51 @@ database.exec(`
     last_updated TEXT NOT NULL,
     UNIQUE (bank, account_name)
   );
+`);
+
+const schema = database.prepare("PRAGMA table_info(uk_savings_accounts)").all();
+const columnsRequiringNullableRates = new Set(["interest_rate_1_year", "rate_type"]);
+if (schema.some((column) => columnsRequiringNullableRates.has(column.name) && column.notnull)) {
+  database.exec(`
+    BEGIN;
+    CREATE TABLE uk_savings_accounts_replacement (
+      id INTEGER PRIMARY KEY,
+      bank TEXT NOT NULL,
+      account_name TEXT NOT NULL,
+      account_type TEXT NOT NULL,
+      interest_rate_1_year REAL CHECK (interest_rate_1_year IS NULL OR interest_rate_1_year >= 0),
+      interest_rate_2 REAL CHECK (interest_rate_2 IS NULL OR interest_rate_2 >= 0),
+      rate_change_after_months INTEGER CHECK (rate_change_after_months IS NULL OR rate_change_after_months > 0),
+      account_term_months INTEGER CHECK (account_term_months IS NULL OR account_term_months > 0),
+      rate_type TEXT,
+      additional_perks TEXT,
+      minimum_deposit REAL CHECK (minimum_deposit IS NULL OR minimum_deposit >= 0),
+      maximum_balance REAL CHECK (maximum_balance IS NULL OR maximum_balance > 0),
+      maximum_monthly_deposit REAL CHECK (maximum_monthly_deposit IS NULL OR maximum_monthly_deposit > 0),
+      eligibility_conditions TEXT,
+      source_url TEXT,
+      last_updated TEXT NOT NULL,
+      UNIQUE (bank, account_name)
+    );
+    INSERT INTO uk_savings_accounts_replacement (
+      id, bank, account_name, account_type, interest_rate_1_year, interest_rate_2,
+      rate_change_after_months, account_term_months, rate_type, additional_perks,
+      minimum_deposit, maximum_balance, maximum_monthly_deposit,
+      eligibility_conditions, source_url, last_updated
+    )
+    SELECT
+      id, bank, account_name, account_type, interest_rate_1_year, interest_rate_2,
+      rate_change_after_months, account_term_months, rate_type, additional_perks,
+      minimum_deposit, maximum_balance, maximum_monthly_deposit,
+      eligibility_conditions, source_url, last_updated
+    FROM uk_savings_accounts;
+    DROP TABLE uk_savings_accounts;
+    ALTER TABLE uk_savings_accounts_replacement RENAME TO uk_savings_accounts;
+    COMMIT;
+  `);
+}
+
+database.exec(`
   CREATE INDEX IF NOT EXISTS idx_savings_account_type ON uk_savings_accounts(account_type);
   CREATE INDEX IF NOT EXISTS idx_savings_account_rate ON uk_savings_accounts(interest_rate_1_year DESC);
 `);
@@ -85,7 +130,19 @@ const recommendationsQuery = database.prepare(`
     AND (maximum_balance IS NULL OR maximum_balance >= :amount)
     -- The questionnaire asks for a starting amount, not a monthly contribution.
     AND account_type != 'Regular saver'
-  ORDER BY match_score DESC, interest_rate_1_year DESC, last_updated DESC, id
+  ORDER BY
+    CASE
+      WHEN :bank NOT IN ('Other', 'none', 'prefer-not-to-say')
+        AND (
+          LOWER(bank) = LOWER(:bank)
+          OR (:bank = 'Lloyds' AND LOWER(bank) = 'lloyds bank')
+        ) THEN 0
+      ELSE 1
+    END,
+    match_score DESC,
+    interest_rate_1_year DESC,
+    last_updated DESC,
+    id
   LIMIT 6
 `);
 

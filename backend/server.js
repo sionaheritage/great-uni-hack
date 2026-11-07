@@ -52,6 +52,10 @@ function validateProfile(profile) {
     && timeframes.has(profile.timeframe);
 }
 
+function normalizeBankName(bank) {
+  return bank.toLowerCase() === "lloyds" ? "lloyds bank" : bank.toLowerCase();
+}
+
 function describeMatch(profile, account) {
   const reasons = [];
   if (profile.timeframe === "soon" && account.account_type === "Easy access") {
@@ -67,6 +71,9 @@ function describeMatch(profile, account) {
     reasons.push(`Minimum starting deposit: £${account.minimum_deposit}.`);
   }
   if (account.eligibility_conditions) reasons.push(account.eligibility_conditions);
+  if (account.interest_rate_1_year === null) {
+    reasons.push("The current rate hasn’t been confirmed, so check it with the provider.");
+  }
   return reasons.join(" ");
 }
 
@@ -188,6 +195,7 @@ const server = createServer(async (request, response) => {
           : profile.bank === "prefer-not-to-say"
             ? "We’ll focus on account types, so your current bank doesn’t need to be part of the decision."
             : "You can compare options from different providers; you don’t have to save with your current bank.",
+        hasCurrentBankOptions: accounts.some((account) => normalizeBankName(account.bank) === normalizeBankName(profile.bank)),
         accounts,
         totalAccounts: getSavingsAccountCount(),
         recommendationNote: profile.age === "under18"
@@ -217,6 +225,10 @@ const server = createServer(async (request, response) => {
       const account = getSavingsAccount(accountId);
       if (!account) {
         sendJson(response, 404, { error: "That savings account is no longer available. Please refresh your options." });
+        return;
+      }
+      if (account.interest_rate_1_year === null || account.rate_type === null) {
+        sendJson(response, 400, { error: "A current rate for this account hasn’t been confirmed, so we can’t make a savings projection yet. Check the provider’s details." });
         return;
       }
       if (account.minimum_deposit !== null && amount < account.minimum_deposit) {

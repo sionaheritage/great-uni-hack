@@ -268,14 +268,19 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
 .results-intro > p:last-child { color: var(--muted); font-size: 14px; margin: 0 auto; max-width: 580px; }
 .results-layout { align-items: start; display: grid; gap: 27px; grid-template-columns: 1.1fr .9fr; }
 .results-subheading { font-family: var(--serif); font-size: 20px; font-weight: 500; margin: 0 0 14px; }
+.bank-note { background: #e9eee2; border-left: 3px solid var(--green); border-radius: 3px 10px 10px 3px; color: var(--ink); font-size: 13px; line-height: 1.6; margin: 0 0 14px; padding: 12px 15px; }
 .account-list { display: grid; gap: 11px; }
 .account-option { min-width: 0; }
 .account-card { background: var(--paper); border: 1px solid #e0d9ca; border-radius: 14px 11px 16px 10px; color: var(--ink); cursor: pointer; display: block; padding: 17px 18px; text-align: left; transition: border .2s, transform .2s, box-shadow .2s; width: 100%; }
 .account-option:nth-child(2) .account-card { border-radius: 10px 16px 11px 14px; }
 .account-option:nth-child(3) .account-card { border-radius: 17px 10px 14px 12px; }
 .account-card:hover, .account-card[aria-pressed="true"] { border-color: var(--green); box-shadow: 0 4px 14px #214d3c12; transform: translateY(-1px); }
+.account-card:disabled { cursor: default; opacity: 1; }
+.account-card:disabled .account-open { color: var(--brown); float: none; display: block; margin-top: 8px; }
 .account-card:focus-visible, .account-source:focus-visible { outline: 3px solid #d5a77e; outline-offset: 3px; }
 .account-card-top { align-items: center; display: flex; justify-content: space-between; }
+.account-card-title { min-width: 0; }
+.account-bank { color: var(--brown); display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; margin-bottom: 4px; text-transform: uppercase; }
 .account-card h4 { font-family: var(--serif); font-size: 18px; font-weight: 500; margin: 0; }
 .rate-pill { background: #e9eee2; border-radius: 20px; color: var(--green); font-size: 12px; font-weight: 700; padding: 4px 9px; white-space: nowrap; }
 .account-card p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 8px 0 10px; }

@@ -151,12 +151,19 @@ function setupRecommendations() {
   }
 
   const list = document.querySelector("#account-list");
-  requestJson("/api/recommendations", profile).then(({ bankMessage, accounts, recommendationNote }) => {
+  requestJson("/api/recommendations", profile).then(({ bankMessage, hasCurrentBankOptions, accounts, recommendationNote }) => {
     document.querySelector("#results-summary").textContent = [
       bankMessage,
       recommendationNote,
       accounts.length ? "Based on your answers, here are a few accounts worth exploring." : ""
     ].filter(Boolean).join(" ");
+    const bankNote = document.querySelector("#bank-note");
+    if (!["Other", "none", "prefer-not-to-say"].includes(profile.bank)) {
+      bankNote.textContent = hasCurrentBankOptions
+        ? `Options from ${profile.bank} are shown first. You may prefer to stay with your current bank, but it’s worth comparing other providers too, as they may offer a better fit.`
+        : `There aren’t any ${profile.bank} accounts in this list, so we’ve shown options from other providers. You may prefer to stay with your current bank, but comparing these options could help you find a better fit.`;
+      bankNote.hidden = false;
+    }
     if (!accounts.length) {
       const empty = document.createElement("p");
       empty.className = "no-accounts";
@@ -173,12 +180,18 @@ function setupRecommendations() {
 
       const top = document.createElement("div");
       top.className = "account-card-top";
+      const titleGroup = document.createElement("div");
+      titleGroup.className = "account-card-title";
+      const bank = document.createElement("span");
+      bank.className = "account-bank";
+      bank.textContent = account.bank;
       const title = document.createElement("h4");
       title.textContent = account.name;
       const rate = document.createElement("span");
       rate.className = "rate-pill";
-      rate.textContent = `${account.rate.toFixed(2)}% a year`;
-      top.append(title, rate);
+      rate.textContent = account.rate === null ? "Rate to check" : `${account.rate.toFixed(2)}% a year`;
+      titleGroup.append(bank, title);
+      top.append(titleGroup, rate);
 
       const description = document.createElement("p");
       description.textContent = account.description || `${account.accountType} savings account from ${account.bank}.`;
@@ -187,9 +200,14 @@ function setupRecommendations() {
       match.textContent = account.reason;
       const open = document.createElement("span");
       open.className = "account-open";
-      open.textContent = "See a savings example";
+      open.textContent = account.rate === null ? "Check provider details below" : "See a savings example";
       button.append(top, description, match, open);
-      button.addEventListener("click", () => selectAccount(button, account));
+      if (account.rate === null) {
+        button.disabled = true;
+        button.classList.add("account-rate-unverified");
+      } else {
+        button.addEventListener("click", () => selectAccount(button, account));
+      }
       option.append(button);
       if (account.sourceUrl) {
         const source = document.createElement("a");
