@@ -21,6 +21,7 @@ For automatic server restarts while editing, run `npm run dev`.
 - `frontend/` contains the separate landing, questionnaire, and recommendations pages, along with shared styles and browser code.
 - `backend/server.js` serves the frontend and provides `POST /api/recommendations`, `POST /api/projection`, and `GET /api/health`.
 - `backend/database.js` creates a local SQLite database at `backend/data/savings.sqlite` and loads or refreshes it from `backend/seed-accounts.sql` each time the server starts. The generated database file is ignored by Git.
+- The daily streak is stored in the visitor’s browser and increases at most once per calendar day; missing a day starts the streak over at one.
 
 Accounts whose rates still need checking are stored with a blank rate, shown as “Rate to check,” and aren’t used for savings projections. Regular savers aren’t recommended because the questionnaire doesn’t ask how much someone can add each month.
 

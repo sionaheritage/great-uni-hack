@@ -107,7 +107,8 @@ async function serveFrontend(pathname, response) {
     "/questionnaire": "questionnaire.html",
     "/recommendations": "recommendations.html",
     "/insights": "insights.html",
-    "/insights.html": "insights.html"
+    "/insights.html": "insights.html",
+    "/streak": "streak.html"
   };
   let requestedPath;
   try {
@@ -139,7 +140,8 @@ async function serveFrontend(pathname, response) {
         "/questionnaire": "questionnaire",
         "/recommendations": "recommendations",
         "/insights": "insights",
-        "/insights.html": "insights"
+        "/insights.html": "insights",
+        "/streak": "streak"
       }[normalizedPath] || path.basename(filePath, ".html");
       body = body.replace("<!-- SITE_HEADER -->", header.replace(/\{\{([A-Z_]+)_CURRENT\}\}/g, (_match, page) =>
         page.toLowerCase() === currentPage ? ' aria-current="page"' : ""

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f1e7">
+    <meta name="description" content="Keep a gentle daily streak and watch your Goodnest sprout grow.">
+    <title>My daily streak — Goodnest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body data-page="streak">
+    <!-- SITE_HEADER -->
+    <main class="streak-page page-section">
+      <section class="streak-card" aria-labelledby="streak-heading">
+        <p class="eyebrow">A little care, each day</p>
+        <h1 id="streak-heading">Your daily <span class="serif-accent">streak.</span></h1>
+        <div class="streak-count" aria-live="polite">
+          <strong id="streak-count">1</strong>
+          <span id="streak-label">day in a row</span>
+        </div>
+        <svg id="sprout-plant" class="sprout-plant" data-growth="1" viewBox="0 0 280 300" role="img" aria-labelledby="sprout-title sprout-description">
+          <title id="sprout-title">Your growing Goodnest sprout</title>
+          <desc id="sprout-description">A sprout that grows as your daily app streak gets longer.</desc>
+          <path class="sprout-ground" d="M66 248 Q140 237 214 248"/>
+          <path class="sprout-stem sprout-stem-one" d="M140 241 C138 221 142 204 140 186"/>
+          <path class="sprout-stem sprout-stem-two" d="M140 190 C135 172 143 156 140 139"/>
+          <path class="sprout-stem sprout-stem-three" d="M140 143 C138 123 143 106 140 88"/>
+          <path class="sprout-stem sprout-stem-four" d="M140 92 C137 74 142 58 140 42"/>
+          <path class="sprout-leaf sprout-leaf-one" d="M139 204 C119 179 92 178 79 188 C95 210 119 217 139 211Z"/>
+          <path class="sprout-leaf sprout-leaf-two" d="M141 169 C158 144 184 142 200 151 C186 174 163 181 142 176Z"/>
+          <path class="sprout-leaf sprout-leaf-three" d="M139 135 C119 111 94 109 79 119 C95 141 119 148 140 142Z"/>
+          <path class="sprout-leaf sprout-leaf-four" d="M141 101 C160 76 185 75 201 85 C187 106 163 114 141 109Z"/>
+          <path class="sprout-leaf sprout-leaf-five" d="M140 45 C119 33 115 16 127 7 C139 12 146 25 140 45Z"/>
+          <path class="sprout-pot" d="M103 244 H177 L167 292 H113Z"/>
+          <path class="sprout-pot-rim" d="M98 236 H182 V249 H98Z"/>
+          <path class="sprout-pot-detail" d="M126 260 L129 281 M140 260 V284 M154 260 L151 281"/>
+          <path class="sprout-blossom" d="M140 29 C133 22 137 15 140 13 C143 15 147 22 140 29Z"/>
+        </svg>
+        <p class="streak-message" id="streak-message">Your plant will grow every day you open the app.</p>
+        <p class="streak-next-step" id="streak-next-step">Come back tomorrow to keep your streak going.</p>
+      </section>
+    </main>
+    <footer class="site-footer"><a class="brand brand-footer" href="/"><span class="brand-mark" aria-hidden="true">g</span><span>goodnest</span></a><span class="footer-disclaimer">Goodnest is an educational guide, not financial advice.</span></footer>
+  </body>
+</html>

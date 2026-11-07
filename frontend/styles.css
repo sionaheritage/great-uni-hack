@@ -289,6 +289,60 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
 .account-source { color: var(--green); display: inline-block; font-size: 12px; margin: 7px 0 0 8px; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .no-accounts { background: #fffdf8; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); line-height: 1.6; margin: 0; padding: 18px; }
 .result-disclaimer { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 15px 0 0; }
+.streak-page { align-items: center; display: flex; justify-content: center; min-height: calc(100vh - 150px); padding-bottom: 55px; padding-top: 40px; }
+.streak-card { align-items: center; background: var(--paper); border: 1px solid #e8e0d2; border-radius: 24px 18px 26px 20px; box-shadow: 0 14px 40px #4937210d; display: flex; flex-direction: column; max-width: 560px; padding: 38px 36px 34px; text-align: center; width: 100%; }
+.streak-card .eyebrow { margin-bottom: 8px; }
+.streak-card h1 { font-size: clamp(38px, 5vw, 52px); margin-bottom: 10px; }
+.streak-count { align-items: baseline; color: var(--green); display: flex; gap: 9px; justify-content: center; }
+.streak-count strong { font-family: var(--serif); font-size: 65px; font-weight: 500; line-height: 1; }
+.streak-count span { color: var(--muted); font-size: 15px; }
+.sprout-plant { height: 245px; margin: 12px auto 8px; overflow: visible; width: 230px; }
+.sprout-ground, .sprout-pot-detail { fill: none; stroke: #8d5c3c; stroke-linecap: round; }
+.sprout-ground { opacity: .35; stroke-width: 2; }
+.sprout-stem { fill: none; stroke: #59784f; stroke-linecap: round; stroke-width: 5; }
+.sprout-stem-two, .sprout-stem-three, .sprout-stem-four { opacity: 0; }
+.sprout-leaf { fill: #77966f; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.sprout-leaf-one { opacity: 1; }
+.sprout-leaf-two { fill: #66895f; }
+.sprout-leaf-three { fill: #8a9e77; }
+.sprout-leaf-four { fill: #71916a; }
+.sprout-leaf-five { fill: #d7bb93; }
+.sprout-pot { fill: #c99a72; }
+.sprout-pot-rim { fill: #ad7955; }
+.sprout-pot-detail { stroke: #8d5c3c; stroke-width: 2; }
+.sprout-blossom { fill: #d7bb93; opacity: 0; }
+.sprout-plant[data-growth="2"] .sprout-stem-two,
+.sprout-plant[data-growth="3"] .sprout-stem-two,
+.sprout-plant[data-growth="4"] .sprout-stem-two,
+.sprout-plant[data-growth="5"] .sprout-stem-two,
+.sprout-plant[data-growth="6"] .sprout-stem-two,
+.sprout-plant[data-growth="7"] .sprout-stem-two { opacity: 1; }
+.sprout-plant[data-growth="2"] .sprout-leaf-two,
+.sprout-plant[data-growth="3"] .sprout-leaf-two,
+.sprout-plant[data-growth="4"] .sprout-leaf-two,
+.sprout-plant[data-growth="5"] .sprout-leaf-two,
+.sprout-plant[data-growth="6"] .sprout-leaf-two,
+.sprout-plant[data-growth="7"] .sprout-leaf-two,
+.sprout-plant[data-growth="3"] .sprout-leaf-three,
+.sprout-plant[data-growth="4"] .sprout-leaf-three,
+.sprout-plant[data-growth="5"] .sprout-leaf-three,
+.sprout-plant[data-growth="6"] .sprout-leaf-three,
+.sprout-plant[data-growth="7"] .sprout-leaf-three { opacity: 1; }
+.sprout-plant[data-growth="4"] .sprout-stem-three,
+.sprout-plant[data-growth="5"] .sprout-stem-three,
+.sprout-plant[data-growth="6"] .sprout-stem-three,
+.sprout-plant[data-growth="7"] .sprout-stem-three,
+.sprout-plant[data-growth="5"] .sprout-leaf-four,
+.sprout-plant[data-growth="6"] .sprout-leaf-four,
+.sprout-plant[data-growth="7"] .sprout-leaf-four { opacity: 1; }
+.sprout-plant[data-growth="6"] .sprout-stem-four,
+.sprout-plant[data-growth="7"] .sprout-stem-four,
+.sprout-plant[data-growth="6"] .sprout-leaf-five,
+.sprout-plant[data-growth="7"] .sprout-leaf-five { opacity: 1; }
+.sprout-plant[data-growth="7"] .sprout-blossom { opacity: 1; }
+.sprout-stem, .sprout-leaf, .sprout-blossom { transition: opacity .45s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
+.streak-message { color: var(--ink); font-family: var(--serif); font-size: 19px; margin: 0 0 5px; }
+.streak-next-step { color: var(--muted); font-size: 13px; margin: 0; }
 .projection-card { background: var(--green); border-radius: 17px 13px 20px 14px; color: var(--paper); padding: 27px 25px 22px; position: relative; }
 .projection-card .eyebrow { color: #d8c29f; margin-bottom: 8px; }
 .projection-card h3 { font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.25; margin: 0 20px 8px 0; }
@@ -326,6 +380,7 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
   .discovery-copy + .hero-art .plant-illustration { height: min(360px, 44vw); width: min(370px, 44vw); }
   .results-layout { grid-template-columns: 1fr; }
   .projection-card { max-width: 560px; width: 100%; }
+  .streak-page { min-height: calc(100vh - 170px); padding-bottom: 35px; padding-top: 30px; }
 }
 
 @media (max-width: 600px) {
@@ -367,6 +422,9 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
   .account-open { float: none; display: block; margin-top: 8px; }
   .projection-card { padding: 23px 17px 18px; }
   .results-intro h1 { font-size: 34px; }
+  .streak-card { padding: 30px 21px 26px; }
+  .streak-card h1 { font-size: 39px; }
+  .sprout-plant { height: 215px; width: 205px; }
   .site-footer { align-items: flex-start; flex-direction: column; gap: 9px; padding: 21px 6%; }
 }
 

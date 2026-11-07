@@ -4,6 +4,46 @@ const formatMoney = (value) => new Intl.NumberFormat("en-GB", {
   maximumFractionDigits: 0
 }).format(value);
 
+function getLocalDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function recordDailyStreak() {
+  const today = getLocalDateKey(new Date());
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = getLocalDateKey(yesterdayDate);
+
+  try {
+    const saved = JSON.parse(localStorage.getItem("goodnest-daily-streak") || "null");
+    const previousCount = Number.isSafeInteger(saved?.count) && saved.count > 0 ? saved.count : 0;
+    const count = saved?.lastVisit === today
+      ? Math.max(previousCount, 1)
+      : saved?.lastVisit === yesterday
+        ? previousCount + 1
+        : 1;
+    localStorage.setItem("goodnest-daily-streak", JSON.stringify({ count, lastVisit: today }));
+    return { count, saved: true };
+  } catch {
+    return { count: 1, saved: false };
+  }
+}
+
+function setupStreak(streak) {
+  document.querySelector("#streak-count").textContent = String(streak.count);
+  document.querySelector("#streak-label").textContent = streak.count === 1 ? "day in a row" : "days in a row";
+  document.querySelector("#sprout-plant").dataset.growth = String(Math.min(streak.count, 7));
+  document.querySelector("#streak-message").textContent = streak.saved
+    ? "Your plant will grow every day you open the app."
+    : "Your streak couldn’t be saved on this device. Check your browser storage settings to keep it growing.";
+  document.querySelector("#streak-next-step").textContent = streak.saved
+    ? "Come back tomorrow to keep your streak going."
+    : "Your streak starts at one. Once browser storage is available, we can keep count of your visits.";
+}
+
 async function requestJson(path, data) {
   const response = await fetch(path, {
     method: "POST",
@@ -441,3 +481,5 @@ function setupInsights() {
 if (document.body.dataset.page === "questionnaire") setupQuestionnaire();
 if (document.body.dataset.page === "recommendations") setupRecommendations();
 if (document.body.dataset.page === "insights") setupInsights();
+const dailyStreak = recordDailyStreak();
+if (document.body.dataset.page === "streak") setupStreak(dailyStreak);
