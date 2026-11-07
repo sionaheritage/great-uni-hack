@@ -187,6 +187,7 @@ h1 { font-size: clamp(58px, 6.3vw, 88px); line-height: .99; margin-bottom: 24px;
 .button-green:hover { background: var(--green-dark); }
 
 .hero-art { align-items: center; display: flex; height: 420px; justify-content: flex-end; margin: 20px auto 0; max-width: 1120px; overflow: hidden; pointer-events: none; position: relative; width: 100%; z-index: 2; }
+.feature-paragraph { color: var(--ink); font-size: 16px; line-height: 1.8; margin: 0; max-width: 490px; pointer-events: auto; position: absolute; left: 1%; text-align: left; top: 50%; transform: translateY(-50%); width: 48%; z-index: 2; }
 .hero-vine { --vine-shift: -720px; background-image: url("/assets/hero-vine.svg"); background-repeat: repeat-x; background-size: 720px 120px; height: clamp(72px, 11vw, 120px); left: 0; pointer-events: none; position: absolute; width: 100%; z-index: 3; }
 .hero-vine-top { animation: vine-scroll 48s linear infinite; top: -5px; }
 .hero-vine-bottom { animation: vine-scroll 64s linear infinite reverse; bottom: 1px; }
@@ -397,6 +398,7 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
   .discovery-copy + .hero-art .plant-illustration { height: min(310px, 78vw); transform: translateY(5px); width: min(290px, 78vw); }
   .hero-vine { --vine-shift: -720px; background-size: 720px 120px; height: 94px; }
   .hero-vine-bottom { bottom: 0; }
+  .feature-paragraph { background: rgba(246, 241, 231, .94); border-radius: 12px; font-size: 12px; left: 5%; line-height: 1.5; padding: 8px 10px; text-align: center; top: 0; transform: none; width: 90%; }
   .how-section { padding-bottom: 62px; padding-top: 64px; }
   .section-heading { margin-bottom: 27px; }
   h2 { font-size: 36px; }
