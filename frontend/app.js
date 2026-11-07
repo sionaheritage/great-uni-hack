@@ -107,7 +107,7 @@ function setupQuestionnaire() {
   });
 }
 
-function renderChart(yearlyBalances) {
+function renderChart(yearlyBalances, horizonYears) {
   const width = 400;
   const height = 180;
   const left = 58;
@@ -115,7 +115,7 @@ function renderChart(yearlyBalances) {
   const top = 14;
   const bottom = 159;
   const max = Math.max(yearlyBalances.at(-1).balance * 1.08, yearlyBalances[0].balance * 1.08, 1);
-  const x = (year) => left + (year / 10) * (right - left);
+  const x = (year) => left + (year / horizonYears) * (right - left);
   const y = (value) => bottom - (value / max) * (bottom - top);
   const points = yearlyBalances.map(({ year, balance }) => `${x(year)},${y(balance)}`);
   const linePath = `M ${points.join(" L ")}`;
@@ -123,16 +123,17 @@ function renderChart(yearlyBalances) {
   const grid = [0, max / 2, max].map((value) =>
     `<line class="chart-grid" x1="${left}" y1="${y(value)}" x2="${right}" y2="${y(value)}"></line><text class="chart-y-label" x="0" y="${y(value) + 3}">${formatMoney(value)}</text>`
   ).join("");
-  const marks = [0, 5, 10].map((year) => {
-    const balance = yearlyBalances[year].balance;
-    return `<circle class="chart-point" cx="${x(year)}" cy="${y(balance)}" r="4"></circle>`;
+  const markIndexes = [...new Set([0, Math.floor((yearlyBalances.length - 1) / 2), yearlyBalances.length - 1])];
+  const marks = markIndexes.map((index) => {
+    const point = yearlyBalances[index];
+    return `<circle class="chart-point" cx="${x(point.year)}" cy="${y(point.balance)}" r="4"></circle>`;
   }).join("");
   const initial = formatMoney(yearlyBalances[0].balance);
   const final = formatMoney(yearlyBalances.at(-1).balance);
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", `Illustrative savings projection from ${initial} to ${final} over 10 years`);
+  svg.setAttribute("aria-label", `Illustrative savings projection from ${initial} to ${final} over ${horizonYears} years`);
   svg.innerHTML = `${grid}<path class="chart-area" d="${areaPath}"></path><path class="chart-line" d="${linePath}"></path>${marks}`;
   document.querySelector("#chart-wrap").replaceChildren(svg);
 }
@@ -150,9 +151,21 @@ function setupRecommendations() {
   }
 
   const list = document.querySelector("#account-list");
-  requestJson("/api/recommendations", profile).then(({ bankMessage, accounts }) => {
-    document.querySelector("#results-summary").textContent = `${bankMessage} Based on your answers, here are a few account types worth exploring.`;
+  requestJson("/api/recommendations", profile).then(({ bankMessage, accounts, recommendationNote }) => {
+    document.querySelector("#results-summary").textContent = [
+      bankMessage,
+      recommendationNote,
+      accounts.length ? "Based on your answers, here are a few accounts worth exploring." : ""
+    ].filter(Boolean).join(" ");
+    if (!accounts.length) {
+      const empty = document.createElement("p");
+      empty.className = "no-accounts";
+      empty.textContent = recommendationNote || "No accounts in the supplied list match your starting amount. Try changing your answers or check the providers’ terms.";
+      list.append(empty);
+    }
     for (const account of accounts) {
+      const option = document.createElement("article");
+      option.className = "account-option";
       const button = document.createElement("button");
       button.className = "account-card";
       button.type = "button";
@@ -160,24 +173,34 @@ function setupRecommendations() {
 
       const top = document.createElement("div");
       top.className = "account-card-top";
-      const title = document.createElement("h3");
+      const title = document.createElement("h4");
       title.textContent = account.name;
       const rate = document.createElement("span");
       rate.className = "rate-pill";
-      rate.textContent = `${account.rate.toFixed(1)}% example rate`;
+      rate.textContent = `${account.rate.toFixed(2)}% a year`;
       top.append(title, rate);
 
       const description = document.createElement("p");
-      description.textContent = account.description;
+      description.textContent = account.description || `${account.accountType} savings account from ${account.bank}.`;
       const match = document.createElement("span");
       match.className = "account-match";
-      match.textContent = account.reason || account.match;
+      match.textContent = account.reason;
       const open = document.createElement("span");
       open.className = "account-open";
       open.textContent = "See a savings example";
       button.append(top, description, match, open);
       button.addEventListener("click", () => selectAccount(button, account));
-      list.append(button);
+      option.append(button);
+      if (account.sourceUrl) {
+        const source = document.createElement("a");
+        source.className = "account-source";
+        source.href = account.sourceUrl;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+        source.textContent = `Check ${account.bank}’s account details`;
+        option.append(source);
+      }
+      list.append(option);
     }
   }).catch((error) => {
     document.querySelector("#results-summary").textContent = error.message;
@@ -185,16 +208,28 @@ function setupRecommendations() {
 
   async function selectAccount(button, account) {
     try {
-      const { yearlyBalances, account: selected } = await requestJson("/api/projection", {
+      const { yearlyBalances, account: selected, horizonYears } = await requestJson("/api/projection", {
         amount: profile.amount,
         accountId: account.id
       });
       list.querySelectorAll(".account-card").forEach((card) => card.setAttribute("aria-pressed", "false"));
       button.setAttribute("aria-pressed", "true");
-      document.querySelector("#projection-title").textContent = selected.name;
-      document.querySelector("#projection-lead").textContent = `Starting with ${formatMoney(profile.amount)} at an example rate of ${selected.rate.toFixed(1)}% a year.`;
+      document.querySelector("#projection-title").textContent = `${selected.bank} — ${selected.name}`;
+      const rateText = selected.termMonths
+        ? selected.secondRate === null
+          ? `${selected.rate.toFixed(2)}% a year for the ${selected.termMonths}-month term`
+          : `${selected.rate.toFixed(2)}% a year for ${selected.rateChangeAfterMonths} months, then ${selected.secondRate.toFixed(2)}% for the rest of the ${selected.termMonths}-month term`
+        : selected.secondRate === null
+          ? `${selected.rate.toFixed(2)}% a year`
+          : `${selected.rate.toFixed(2)}% a year for ${selected.rateChangeAfterMonths} months, then ${selected.secondRate.toFixed(2)}%`;
+      document.querySelector("#projection-lead").textContent = `Starting with ${formatMoney(profile.amount)} at ${rateText}.`;
       document.querySelector("#projection-total").textContent = formatMoney(yearlyBalances.at(-1).balance);
-      renderChart(yearlyBalances);
+      document.querySelector("#projection-end-label").textContent = `${horizonYears} ${horizonYears === 1 ? "year" : "years"}`;
+      document.querySelector("#projection-total-label").textContent = `After ${horizonYears} ${horizonYears === 1 ? "year" : "years"}, about`;
+      document.querySelector("#projection-note").textContent = selected.termMonths
+        ? `This example stops at the account’s ${selected.termMonths}-month term. It assumes interest is added monthly, no money is added or taken out, and any listed rate change happens as shown. It does not account for balance limits. Check the provider’s terms before opening an account.`
+        : "This example assumes the listed rate stays the same unless a later rate is shown, interest is added monthly, and you don’t add or take out money. Variable rates can change, and this example does not account for balance limits. Check the provider’s terms before opening an account.";
+      renderChart(yearlyBalances, horizonYears);
       document.querySelector("#projection-card").hidden = false;
       document.querySelector("#projection-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (error) {

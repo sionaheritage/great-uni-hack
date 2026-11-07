@@ -16,14 +16,14 @@
         <div class="results-intro"><h1>Your savings <span class="serif-accent">starting points.</span></h1><p id="results-summary">Finding a few options to explore…</p></div>
         <div class="results-layout">
           <section aria-labelledby="options-heading"><h2 class="results-subheading" id="options-heading">A few options to explore</h2><div class="account-list" id="account-list"></div>
-            <p class="result-disclaimer">These are account types, not offers from specific banks. Example rates are for illustration only and may not match what’s available. Always check the provider’s terms, access rules and rate before opening an account.</p>
+            <p class="result-disclaimer">These account details come from the supplied account list and may be out of date. Regular monthly-saver accounts are not shown because we only asked about your starting amount. Rates and eligibility can change. Always check the provider’s own terms before opening an account. This is an educational guide, not financial advice.</p>
           </section>
           <aside class="projection-card" id="projection-card" hidden aria-live="polite">
             <button class="projection-close" id="close-projection" type="button" aria-label="Close savings projection">×</button>
             <h2 id="projection-title">Your money, over time</h2><p class="projection-lead" id="projection-lead"></p>
-            <div class="chart-legend"><span class="legend-dot"></span> Possible balance</div><div class="chart-wrap" id="chart-wrap"></div><div class="chart-endpoints"><span>Today</span><span>10 years</span></div>
-            <div class="projection-total"><span>After 10 years, about</span><strong id="projection-total"></strong></div>
-            <p class="projection-note">This example assumes the rate stays the same, interest is added yearly, and you don’t add or take out money. Real rates and balances can change.</p>
+            <div class="chart-legend"><span class="legend-dot"></span> Possible balance</div><div class="chart-wrap" id="chart-wrap"></div><div class="chart-endpoints"><span>Today</span><span id="projection-end-label">10 years</span></div>
+            <div class="projection-total"><span id="projection-total-label">After 10 years, about</span><strong id="projection-total"></strong></div>
+            <p class="projection-note" id="projection-note"></p>
           </aside>
         </div>
         <a class="text-button restart-button" href="/questionnaire">Change my answers</a>

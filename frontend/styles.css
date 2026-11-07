@@ -269,16 +269,20 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
 .results-layout { align-items: start; display: grid; gap: 27px; grid-template-columns: 1.1fr .9fr; }
 .results-subheading { font-family: var(--serif); font-size: 20px; font-weight: 500; margin: 0 0 14px; }
 .account-list { display: grid; gap: 11px; }
+.account-option { min-width: 0; }
 .account-card { background: var(--paper); border: 1px solid #e0d9ca; border-radius: 14px 11px 16px 10px; color: var(--ink); cursor: pointer; display: block; padding: 17px 18px; text-align: left; transition: border .2s, transform .2s, box-shadow .2s; width: 100%; }
-.account-card:nth-child(2) { border-radius: 10px 16px 11px 14px; }
-.account-card:nth-child(3) { border-radius: 17px 10px 14px 12px; }
+.account-option:nth-child(2) .account-card { border-radius: 10px 16px 11px 14px; }
+.account-option:nth-child(3) .account-card { border-radius: 17px 10px 14px 12px; }
 .account-card:hover, .account-card[aria-pressed="true"] { border-color: var(--green); box-shadow: 0 4px 14px #214d3c12; transform: translateY(-1px); }
+.account-card:focus-visible, .account-source:focus-visible { outline: 3px solid #d5a77e; outline-offset: 3px; }
 .account-card-top { align-items: center; display: flex; justify-content: space-between; }
 .account-card h4 { font-family: var(--serif); font-size: 18px; font-weight: 500; margin: 0; }
 .rate-pill { background: #e9eee2; border-radius: 20px; color: var(--green); font-size: 12px; font-weight: 700; padding: 4px 9px; white-space: nowrap; }
 .account-card p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 8px 0 10px; }
 .account-match { color: var(--brown); font-size: 12px; font-weight: 700; letter-spacing: .2px; }
 .account-open { color: var(--green); float: right; font-size: 12px; font-weight: 700; }
+.account-source { color: var(--green); display: inline-block; font-size: 12px; margin: 7px 0 0 8px; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.no-accounts { background: #fffdf8; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); line-height: 1.6; margin: 0; padding: 18px; }
 .result-disclaimer { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 15px 0 0; }
 .projection-card { background: var(--green); border-radius: 17px 13px 20px 14px; color: var(--paper); padding: 27px 25px 22px; position: relative; }
 .projection-card .eyebrow { color: #d8c29f; margin-bottom: 8px; }
@@ -401,9 +405,9 @@ select:focus, input:focus { border-color: var(--green); outline: 2px solid #bfd0
 .choice-card > span { transition: border-color .2s ease, background .2s ease, transform .2s ease; }
 .choice-card:hover > span { border-color: #a6b39e; transform: translateY(-2px); }
 .account-card { animation: rise-in .4s both; }
-.account-card:nth-child(2) { animation-delay: .06s; }
-.account-card:nth-child(3) { animation-delay: .12s; }
-.account-card:nth-child(4) { animation-delay: .18s; }
+.account-option:nth-child(2) .account-card { animation-delay: .06s; }
+.account-option:nth-child(3) .account-card { animation-delay: .12s; }
+.account-option:nth-child(4) .account-card { animation-delay: .18s; }
 .projection-card { animation: rise-in .45s both; }
 .chart-line { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw-line 1.15s .1s ease-out forwards; }
 @keyframes draw-line { to { stroke-dashoffset: 0; } }

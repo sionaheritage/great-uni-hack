@@ -3,55 +3,11 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getSpendingInsight } from "./api.js";
+import { getRecommendedAccounts, getSavingsAccount, getSavingsAccountCount } from "./database.js";
 
 const backendDirectory = path.dirname(fileURLToPath(import.meta.url));
 const frontendDirectory = path.resolve(backendDirectory, "..", "frontend");
 const port = Number(process.env.PORT) || 3000;
-
-const accounts = {
-  easy: {
-    id: "easy",
-    name: "Easy-access savings",
-    rate: 3.6,
-    description: "A handy place for savings you may need to reach without much notice. You can usually add or take out money when you need to.",
-    match: "A flexible place to start"
-  },
-  cashIsa: {
-    id: "cashIsa",
-    name: "Cash ISA",
-    rate: 4.0,
-    description: "A savings account where the interest is usually tax-free. You can normally take money out, but check whether the account has any limits or charges.",
-    match: "Worth a look for longer-term saving"
-  },
-  fixed: {
-    id: "fixed",
-    name: "Fixed-term savings",
-    rate: 4.2,
-    description: "You agree to leave your money untouched for a set time. The rate may be higher, but getting your money early can be difficult or cost extra.",
-    match: "For money you can leave alone"
-  },
-  junior: {
-    id: "junior",
-    name: "Children’s savings account",
-    rate: 4.0,
-    description: "A way to put money aside for a child. Some accounts are easy to access; others are locked away until the child turns 18.",
-    match: "An option for a child’s future"
-  },
-  juniorIsa: {
-    id: "juniorIsa",
-    name: "Junior ISA",
-    rate: 4.1,
-    description: "A tax-free savings account for a child, opened by a parent or guardian. The money belongs to the child and they can usually access it at 18.",
-    match: "Made for a child’s longer-term future"
-  },
-  starter: {
-    id: "starter",
-    name: "Getting-started savings",
-    rate: 3.5,
-    description: "A simple account to help you build a savings habit. Some providers offer options with a low minimum deposit.",
-    match: "A simple first step"
-  }
-};
 
 const ageGroups = new Set(["under18", "18-24", "25-34", "35-49", "50-64", "65plus", "prefer-not-to-say"]);
 const banks = new Set(["Barclays", "HSBC", "Lloyds", "NatWest", "Nationwide", "Santander", "Monzo", "Starling", "Other", "none", "prefer-not-to-say"]);
@@ -65,6 +21,8 @@ const contentTypes = {
   ".ico": "image/x-icon"
 };
 
+class BadRequestError extends Error {}
+
 function sendJson(response, status, data) {
   response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   response.end(JSON.stringify(data));
@@ -74,12 +32,12 @@ async function readJson(request) {
   let body = "";
   for await (const chunk of request) {
     body += chunk;
-    if (body.length > 16_384) throw new Error("Request body is too large.");
+    if (body.length > 16_384) throw new BadRequestError("Request body is too large.");
   }
   try {
     return JSON.parse(body);
   } catch {
-    throw new Error("Please send valid JSON.");
+    throw new BadRequestError("Please send valid JSON.");
   }
 }
 
@@ -94,40 +52,46 @@ function validateProfile(profile) {
     && timeframes.has(profile.timeframe);
 }
 
-function recommend(profile) {
-  const recommendations = [];
-  if (profile.age === "under18") {
-    recommendations.push({
-      ...accounts.starter,
-      reason: "Some accounts for under-18s need an adult to open them, so check the rules with a parent or guardian."
-    });
-    if (profile.children === "yes") {
-      recommendations.push({
-        ...accounts.junior,
-        reason: "You mentioned children. A parent or guardian usually needs to open this type of account."
-      });
-    }
-    recommendations.push({ ...accounts.easy, reason: "A flexible account can be useful if you might need your savings soon." });
-    return recommendations;
-  }
-
-  if (profile.timeframe === "soon") {
-    recommendations.push({ ...accounts.easy, reason: "You may want this money soon, so being able to access it matters." });
-    recommendations.push({ ...accounts.cashIsa, reason: "Could suit money you want to save while keeping access. Check the withdrawal rules." });
-    recommendations.push({ ...accounts.fixed, reason: "Only consider this for an amount you’re sure you won’t need during the fixed period." });
+function describeMatch(profile, account) {
+  const reasons = [];
+  if (profile.timeframe === "soon" && account.account_type === "Easy access") {
+    reasons.push("Easy access may suit your plans to use the money soon.");
+  } else if (profile.timeframe === "later" && account.account_type === "Fixed-term") {
+    reasons.push("A fixed term may suit money you can leave untouched for a while.");
+  } else if (account.account_type === "Cash ISA") {
+    reasons.push("A cash ISA may be worth comparing for your savings timeframe.");
   } else {
-    recommendations.push({ ...accounts.cashIsa, reason: "A tax-free option to explore for money you’re happy to leave for a while." });
-    recommendations.push({ ...accounts.fixed, reason: "Leaving money untouched for a set time may offer a different rate." });
-    recommendations.push({ ...accounts.easy, reason: "A flexible option if having access still matters to you." });
+    reasons.push("Matched using your starting amount and savings timeframe.");
+  }
+  if (account.minimum_deposit !== null && account.minimum_deposit !== undefined) {
+    reasons.push(`Minimum starting deposit: £${account.minimum_deposit}.`);
+  }
+  if (account.eligibility_conditions) reasons.push(account.eligibility_conditions);
+  return reasons.join(" ");
+}
+
+function projectSavings(account, amount) {
+  const mentionsIntroductoryRate = /introductory|first 12 months|first year/i.test(account.additional_perks || "");
+  const horizonMonths = account.account_term_months
+    || (mentionsIntroductoryRate && account.interest_rate_2 === null ? 12 : 120);
+  const annualPoints = [{ year: 0, balance: Number(amount.toFixed(2)) }];
+  let balance = amount;
+
+  for (let month = 1; month <= horizonMonths; month += 1) {
+    const usesSecondRate = account.rate_change_after_months
+      && month > account.rate_change_after_months
+      && account.interest_rate_2 !== null;
+    const annualRate = usesSecondRate ? account.interest_rate_2 : account.interest_rate_1_year;
+    balance *= (1 + annualRate / 100) ** (1 / 12);
+    if (month % 12 === 0 || month === horizonMonths) {
+      annualPoints.push({ year: Number((month / 12).toFixed(2)), balance: Number(balance.toFixed(2)) });
+    }
   }
 
-  if (profile.children === "yes") {
-    recommendations.push({ ...accounts.juniorIsa, reason: "You mentioned children. A parent or guardian opens this, and the child gets access at 18." });
-  }
-  if (profile.amount < 25) {
-    recommendations.unshift({ ...accounts.starter, reason: "Some providers let you begin with a small amount. Check minimum deposits before choosing." });
-  }
-  return recommendations.slice(0, 4);
+  return {
+    horizonYears: horizonMonths / 12,
+    yearlyBalances: annualPoints
+  };
 }
 
 async function serveFrontend(pathname, response) {
@@ -199,16 +163,46 @@ const server = createServer(async (request, response) => {
         sendJson(response, 400, { error: "Please check your answers and try again." });
         return;
       }
+      const accounts = (profile.age === "under18" ? [] : getRecommendedAccounts(profile)).map((account) => ({
+        id: account.id,
+        bank: account.bank,
+        name: account.account_name,
+        accountType: account.account_type,
+        rate: account.interest_rate_1_year,
+        secondRate: account.interest_rate_2,
+        rateChangeAfterMonths: account.rate_change_after_months,
+        accountTermMonths: account.account_term_months,
+        rateType: account.rate_type,
+        description: account.additional_perks,
+        minimumDeposit: account.minimum_deposit,
+        maximumBalance: account.maximum_balance,
+        maximumMonthlyDeposit: account.maximum_monthly_deposit,
+        eligibility: account.eligibility_conditions,
+        sourceUrl: account.source_url,
+        lastUpdated: account.last_updated,
+        reason: describeMatch(profile, account)
+      }));
       sendJson(response, 200, {
         bankMessage: profile.bank === "none"
           ? "Not banking anywhere yet? That’s okay — we’ll focus on account types rather than your current bank."
           : profile.bank === "prefer-not-to-say"
             ? "We’ll focus on account types, so your current bank doesn’t need to be part of the decision."
             : "You can compare options from different providers; you don’t have to save with your current bank.",
-        accounts: recommend(profile)
+        accounts,
+        totalAccounts: getSavingsAccountCount(),
+        recommendationNote: profile.age === "under18"
+          ? "The supplied account list has no under-18 eligibility details, so we can’t safely match an account. Ask a parent or guardian to check providers’ youth savings options."
+          : profile.children === "yes"
+            ? "The supplied account list has no child-specific accounts, so these options are for your own savings."
+            : null
       });
     } catch (error) {
-      sendJson(response, 400, { error: error.message });
+      if (error instanceof BadRequestError) {
+        sendJson(response, 400, { error: error.message });
+      } else {
+        console.error("Savings recommendations failed:", error.message);
+        sendJson(response, 500, { error: "Savings options aren’t available right now. Please try again." });
+      }
     }
     return;
   }
@@ -216,18 +210,45 @@ const server = createServer(async (request, response) => {
   if (url.pathname === "/api/projection" && request.method === "POST") {
     try {
       const { amount, accountId } = await readJson(request);
-      const account = accounts[accountId];
-      if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000 || !account) {
+      if (!Number.isFinite(amount) || amount < 1 || amount > 1_000_000 || !Number.isSafeInteger(accountId) || accountId < 1) {
         sendJson(response, 400, { error: "Choose an account and enter a starting amount between £1 and £1,000,000." });
         return;
       }
-      const yearlyBalances = Array.from({ length: 11 }, (_, year) => ({
-        year,
-        balance: Number((amount * (1 + account.rate / 100) ** year).toFixed(2))
-      }));
-      sendJson(response, 200, { account, yearlyBalances });
+      const account = getSavingsAccount(accountId);
+      if (!account) {
+        sendJson(response, 404, { error: "That savings account is no longer available. Please refresh your options." });
+        return;
+      }
+      if (account.minimum_deposit !== null && amount < account.minimum_deposit) {
+        sendJson(response, 400, { error: `This account needs at least £${account.minimum_deposit} to start.` });
+        return;
+      }
+      if (account.maximum_balance !== null && amount > account.maximum_balance) {
+        sendJson(response, 400, { error: "This account’s maximum balance is lower than your starting amount." });
+        return;
+      }
+      const { yearlyBalances, horizonYears } = projectSavings(account, amount);
+      sendJson(response, 200, {
+        account: {
+          id: account.id,
+          bank: account.bank,
+          name: account.account_name,
+          rate: account.interest_rate_1_year,
+          secondRate: account.interest_rate_2,
+          rateChangeAfterMonths: account.rate_change_after_months,
+          rateType: account.rate_type,
+          termMonths: account.account_term_months
+        },
+        yearlyBalances,
+        horizonYears
+      });
     } catch (error) {
-      sendJson(response, 400, { error: error.message });
+      if (error instanceof BadRequestError) {
+        sendJson(response, 400, { error: error.message });
+      } else {
+        console.error("Savings projection failed:", error.message);
+        sendJson(response, 500, { error: "This savings example isn’t available right now. Please try again." });
+      }
     }
     return;
   }

@@ -1,0 +1,6 @@
+*.jpg
+.env
+/backend/data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
