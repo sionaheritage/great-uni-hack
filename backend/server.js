@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getSpendingInsight } from "./api.js";
 
 const backendDirectory = path.dirname(fileURLToPath(import.meta.url));
 const frontendDirectory = path.resolve(backendDirectory, "..", "frontend");
@@ -133,7 +134,9 @@ async function serveFrontend(pathname, response) {
   const routes = {
     "/": "index.html",
     "/questionnaire": "questionnaire.html",
-    "/recommendations": "recommendations.html"
+    "/recommendations": "recommendations.html",
+    "/insights": "insights.html",
+    "/insights.html": "insights.html"
   };
   let requestedPath;
   try {
@@ -143,7 +146,11 @@ async function serveFrontend(pathname, response) {
     response.end("Invalid path");
     return;
   }
-  const relativePath = routes[requestedPath] || requestedPath.replace(/^\/+/, "");
+  const normalizedPath = requestedPath.replace(/\/+$/, "") || "/";
+  const frontendPath = normalizedPath.replace(/^\/frontend(?=\/)/, "");
+  const relativePath = routes[normalizedPath]
+    || routes[frontendPath]
+    || frontendPath.replace(/^\/+/, "");
   const filePath = path.resolve(frontendDirectory, relativePath);
   if (!filePath.startsWith(`${frontendDirectory}${path.sep}`) && filePath !== path.join(frontendDirectory, "index.html")) {
     response.writeHead(403);
@@ -153,7 +160,20 @@ async function serveFrontend(pathname, response) {
 
   try {
     if (!(await stat(filePath)).isFile()) throw new Error("Not a file");
-    const body = await readFile(filePath);
+    let body = await readFile(filePath, "utf8");
+    if (body.includes("<!-- SITE_HEADER -->")) {
+      const header = await readFile(path.join(frontendDirectory, "header.html"), "utf8");
+      const currentPage = {
+        "/": "home",
+        "/questionnaire": "questionnaire",
+        "/recommendations": "recommendations",
+        "/insights": "insights",
+        "/insights.html": "insights"
+      }[normalizedPath] || path.basename(filePath, ".html");
+      body = body.replace("<!-- SITE_HEADER -->", header.replace(/\{\{([A-Z_]+)_CURRENT\}\}/g, (_match, page) =>
+        page.toLowerCase() === currentPage ? ' aria-current="page"' : ""
+      ));
+    }
     response.writeHead(200, {
       "Content-Type": contentTypes[path.extname(filePath)] || "application/octet-stream",
       "X-Content-Type-Options": "nosniff"
@@ -208,6 +228,47 @@ const server = createServer(async (request, response) => {
       sendJson(response, 200, { account, yearlyBalances });
     } catch (error) {
       sendJson(response, 400, { error: error.message });
+    }
+    return;
+  }
+
+  if (url.pathname === "/api/insights" && request.method === "POST") {
+    try {
+      const { message, spending, history = [] } = await readJson(request);
+      if (typeof message !== "string" || message.trim().length === 0 || message.length > 800) {
+        sendJson(response, 400, { error: "Write a message of up to 800 characters." });
+        return;
+      }
+      if (!Array.isArray(spending) || spending.length > 15 || spending.some((item) =>
+        !item
+        || typeof item.category !== "string"
+        || item.category.trim().length === 0
+        || item.category.length > 50
+        || !Number.isFinite(item.amount)
+        || item.amount < 0
+        || item.amount > 1_000_000
+      )) {
+        sendJson(response, 400, { error: "Add up to 15 spending categories with valid monthly amounts." });
+        return;
+      }
+      if (!Array.isArray(history) || history.length > 12 || history.some((item) =>
+        !item
+        || !["user", "assistant"].includes(item.role)
+        || typeof item.content !== "string"
+        || item.content.length > 800
+      )) {
+        sendJson(response, 400, { error: "The conversation has grown too long. Start a new chat to continue." });
+        return;
+      }
+      if (!process.env.ANTHROPIC_API_KEY) {
+        sendJson(response, 503, { error: "The chat assistant is not configured. Set ANTHROPIC_API_KEY in .env and restart the app." });
+        return;
+      }
+      const reply = await getSpendingInsight({ message: message.trim(), spending, history });
+      sendJson(response, 200, { reply });
+    } catch (error) {
+      console.error("Insights request failed:", error.message);
+      sendJson(response, 502, { error: "The chat assistant couldn’t reply just now. Please try again." });
     }
     return;
   }

@@ -208,5 +208,183 @@ function setupRecommendations() {
   });
 }
 
+function setupInsights() {
+  const form = document.querySelector("#chat-form");
+  const input = document.querySelector("#chat-input");
+  const sendButton = document.querySelector("#send-button");
+  const messages = document.querySelector("#chat-messages");
+  const welcome = document.querySelector(".chat-welcome");
+  const categories = [];
+  let history = [];
+  let sending = false;
+
+  const colors = ["#214d3c", "#b37550", "#d9b677", "#78966e", "#967d9f", "#688b9b", "#cf8d70", "#9caa78"];
+  const formatCompactMoney = (value) => new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 0
+  }).format(value);
+
+  function addMessage(role, text, typing = false) {
+    const bubble = document.createElement("article");
+    bubble.className = `chat-message chat-message-${role}${typing ? " chat-message-typing" : ""}`;
+    if (role === "assistant") {
+      const mark = document.createElement("span");
+      mark.className = "message-mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = "✳";
+      bubble.append(mark);
+    }
+    const content = document.createElement("p");
+    content.textContent = text;
+    bubble.append(content);
+    messages.append(bubble);
+    document.querySelector("#chat-scroll").scrollTop = document.querySelector("#chat-scroll").scrollHeight;
+    return bubble;
+  }
+
+  function renderSpending() {
+    const total = categories.reduce((sum, item) => sum + item.amount, 0);
+    const summary = document.querySelector("#activity-summary");
+    const empty = document.querySelector("#activity-empty");
+    summary.hidden = categories.length === 0;
+    empty.hidden = categories.length > 0;
+    if (!categories.length) return;
+
+    document.querySelector("#monthly-total").textContent = formatCompactMoney(total);
+    const stops = [];
+    let offset = 0;
+    categories.forEach((item, index) => {
+      const end = offset + (item.amount / total) * 100;
+      stops.push(`${colors[index % colors.length]} ${offset}% ${end}%`);
+      offset = end;
+    });
+    const donut = document.querySelector("#donut-chart");
+    donut.style.background = `conic-gradient(${stops.join(", ")})`;
+    donut.setAttribute("aria-label", `Monthly spending of ${formatCompactMoney(total)} across ${categories.length} categories`);
+
+    const breakdown = document.querySelector("#spending-breakdown");
+    breakdown.replaceChildren();
+    categories.forEach((item, index) => {
+      const row = document.createElement("div");
+      row.className = "spending-row";
+      const label = document.createElement("div");
+      label.className = "spending-row-label";
+      const swatch = document.createElement("span");
+      swatch.className = "spending-swatch";
+      swatch.style.backgroundColor = colors[index % colors.length];
+      const name = document.createElement("span");
+      name.textContent = item.category;
+      const amount = document.createElement("strong");
+      amount.textContent = formatCompactMoney(item.amount);
+      label.append(swatch, name, amount);
+      const track = document.createElement("div");
+      track.className = "spending-bar-track";
+      const bar = document.createElement("span");
+      bar.style.backgroundColor = colors[index % colors.length];
+      bar.style.width = `${Math.max((item.amount / total) * 100, 2)}%`;
+      track.append(bar);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "remove-spending";
+      remove.textContent = "Remove";
+      remove.setAttribute("aria-label", `Remove ${item.category}`);
+      remove.addEventListener("click", () => {
+        categories.splice(index, 1);
+        renderSpending();
+      });
+      row.append(label, track, remove);
+      breakdown.append(row);
+    });
+  }
+
+  async function sendMessage(message) {
+    if (sending || !message.trim()) return;
+    sending = true;
+    welcome.hidden = true;
+    addMessage("user", message);
+    const waiting = addMessage("assistant", "Thinking through it…", true);
+    input.disabled = true;
+    sendButton.disabled = true;
+    try {
+      const result = await requestJson("/api/insights", {
+        message,
+        spending: categories.map(({ category, amount }) => ({ category, amount })),
+        history: history.slice(-12)
+      });
+      waiting.remove();
+      addMessage("assistant", result.reply);
+      history = [...history, { role: "user", content: message }, { role: "assistant", content: result.reply }].slice(-12);
+    } catch (error) {
+      waiting.remove();
+      addMessage("assistant", error.message);
+    } finally {
+      sending = false;
+      input.disabled = false;
+      sendButton.disabled = false;
+      input.focus();
+    }
+  }
+
+  document.querySelector("#opening-choices").addEventListener("click", (event) => {
+    const choice = event.target.closest("button");
+    if (choice) sendMessage(choice.textContent.trim());
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = "";
+    input.style.height = "";
+    sendMessage(message);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 140)}px`;
+  });
+
+  document.querySelector("#new-chat").addEventListener("click", () => {
+    history = [];
+    messages.replaceChildren();
+    welcome.hidden = false;
+    input.value = "";
+    document.querySelector("#chat-scroll").scrollTop = 0;
+  });
+
+  document.querySelector("#spending-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const categoryInput = document.querySelector("#spending-category");
+    const amountInput = document.querySelector("#spending-amount");
+    const category = categoryInput.value;
+    const amount = Number(amountInput.value);
+    if (!category || !Number.isFinite(amount) || amount <= 0 || amount > 1_000_000) return;
+    const existing = categories.find((item) => item.category === category);
+    if (existing) {
+      existing.amount = Math.min(existing.amount + amount, 1_000_000);
+    } else if (categories.length < 8) {
+      categories.push({ category, amount });
+    } else {
+      addMessage("assistant", "You can compare up to eight spending categories at a time. Remove one to add another.");
+      return;
+    }
+    categoryInput.value = "";
+    amountInput.value = "";
+    renderSpending();
+  });
+
+  document.querySelector("#ask-insights").addEventListener("click", () => {
+    sendMessage("Looking at my spending, where could I make one small, sustainable change without giving up what matters to me?");
+  });
+}
+
 if (document.body.dataset.page === "questionnaire") setupQuestionnaire();
 if (document.body.dataset.page === "recommendations") setupRecommendations();
+if (document.body.dataset.page === "insights") setupInsights();

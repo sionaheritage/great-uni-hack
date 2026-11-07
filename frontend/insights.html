@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f1e7">
+    <meta name="description" content="A gentle, practical look at spending and sustainable ways to save.">
+    <title>Spending insights — Goodnest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body data-page="insights">
+    <div class="insights-app">
+      <!-- SITE_HEADER -->
+      <main class="insights-main">
+        <section class="chat-column" aria-label="Spending insights chat">
+          <div class="chat-heading">
+            <div class="chat-title-mark" aria-hidden="true">✳</div>
+            <div><h1>A little more <span class="serif-accent">thoughtfully.</span></h1><p>A kind, practical look at everyday spending.</p></div>
+            <button class="new-chat-button" id="new-chat" type="button">New chat</button>
+          </div>
+          <div class="chat-scroll" id="chat-scroll">
+            <div class="chat-welcome">
+              <span class="welcome-kicker">A gentle place to begin</span>
+              <h2>Do you feel all of your spending is important to you?</h2>
+              <p>There’s no right answer. We can explore small changes together, without judgement.</p>
+              <div class="suggestion-chips" id="opening-choices">
+                <button class="suggestion-chip" type="button">Yes, mostly</button>
+                <button class="suggestion-chip" type="button">Not always</button>
+                <button class="suggestion-chip" type="button">I’m not sure</button>
+              </div>
+            </div>
+            <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+          </div>
+          <form class="chat-composer" id="chat-form">
+            <label class="sr-only" for="chat-input">Ask about your spending</label>
+            <textarea id="chat-input" name="message" rows="1" maxlength="800" placeholder="Ask about your spending or a change you’re considering…" required></textarea>
+            <button class="send-button" id="send-button" type="submit" aria-label="Send message"><span aria-hidden="true">↑</span></button>
+          </form>
+          <p class="privacy-note">Your category totals are shared with Anthropic to generate replies. Don’t include names, account details, or other personal information.</p>
+        </section>
+
+        <aside class="activity-panel" aria-label="Your spending activity">
+          <div class="activity-heading"><div><p class="panel-eyebrow">Your activity</p><h2>Monthly spending</h2></div><span class="activity-spark" aria-hidden="true">✳</span></div>
+          <p class="activity-intro">Add a few rough monthly totals to see where your money goes. Nothing is connected to your bank.</p>
+          <form id="spending-form" class="spending-form">
+            <label class="sr-only" for="spending-category">Spending category</label>
+            <select id="spending-category" required>
+              <option value="">Choose a category</option>
+              <option>Groceries</option><option>Transport</option><option>Eating out</option>
+              <option>Home and bills</option><option>Clothing</option><option>Shopping</option>
+              <option>Subscriptions</option><option>Other</option>
+            </select>
+            <label class="sr-only" for="spending-amount">Monthly amount in pounds</label>
+            <div class="spending-amount"><span aria-hidden="true">£</span><input id="spending-amount" type="number" min="0.01" max="1000000" step="0.01" placeholder="Monthly amount" required inputmode="decimal"></div>
+            <button class="add-spending-button" type="submit">Add spending</button>
+          </form>
+          <div class="activity-summary" id="activity-summary" hidden>
+            <div class="donut-wrap"><div class="donut-chart" id="donut-chart" role="img" aria-label="Spending by category"></div><div class="donut-total"><span>Monthly total</span><strong id="monthly-total">£0</strong></div></div>
+            <div class="spending-breakdown" id="spending-breakdown"></div>
+            <button class="ask-insights-button" id="ask-insights" type="button">Find a small change</button>
+          </div>
+          <div class="activity-empty" id="activity-empty"><span aria-hidden="true">◌</span><p>Your chart will grow as you add categories.</p></div>
+          <p class="activity-footnote">These are estimates you enter yourself. Only the category names and amounts are sent when you chat.</p>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>
