@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f1e7">
+    <title>A few questions — Goodnest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script>
+  </head>
+  <body data-page="questionnaire">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Goodnest home"><span class="brand-mark" aria-hidden="true">g</span><span>goodnest</span></a>
+      <nav class="header-nav" aria-label="Main navigation">
+        <a class="header-link" href="/">Home</a>
+        <a class="header-link" href="/questionnaire" aria-current="page">Find options</a>
+        <a class="header-link" href="/recommendations">My options</a>
+      </nav>
+    </header>
+    <main class="journey-section page-section">
+      <div class="journey-shell">
+        <a class="back-link" id="back-link" href="/"><span aria-hidden="true">←</span> Home</a>
+        <div class="journey-progress">
+          <div class="progress-label"><span>Your questions</span><span id="progress-count">1 of 5</span></div>
+          <div class="progress-track"><span id="progress-bar"></span></div>
+        </div>
+        <form id="profile-form">
+          <section class="question-panel" data-step="1">
+            <h1>What age group are you in?</h1>
+            <div class="choice-grid choice-grid-3">
+              <label class="choice-card"><input type="radio" name="age" value="under18" required><span>Under 18</span></label>
+              <label class="choice-card"><input type="radio" name="age" value="18-24" required><span>18–24</span></label>
+              <label class="choice-card"><input type="radio" name="age" value="25-34" required><span>25–34</span></label>
+              <label class="choice-card"><input type="radio" name="age" value="35-49" required><span>35–49</span></label>
+              <label class="choice-card"><input type="radio" name="age" value="50-64" required><span>50–64</span></label>
+              <label class="choice-card"><input type="radio" name="age" value="65plus" required><span>65 or over</span></label>
+              <label class="choice-card choice-wide"><input type="radio" name="age" value="prefer-not-to-say" required><span>Prefer not to say</span></label>
+            </div>
+            <div class="panel-actions"><button class="button button-green next-button" type="button">Next</button></div>
+          </section>
+          <section class="question-panel" data-step="2" hidden>
+            <h1>Where do you bank right now?</h1>
+            <label class="field-label" for="bank">Your bank or building society</label>
+            <select id="bank" name="bank" required>
+              <option value="">Choose one</option><option>Barclays</option><option>HSBC</option><option>Lloyds</option><option>NatWest</option><option>Nationwide</option><option>Santander</option><option>Monzo</option><option>Starling</option><option value="Other">Another bank or building society</option><option value="none">I don’t have one yet</option><option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+            <div class="panel-actions"><button class="button button-green next-button" type="button">Next</button></div>
+          </section>
+          <section class="question-panel" data-step="3" hidden>
+            <h1>What could you put away to start?</h1>
+            <label class="field-label" for="amount">Your starting amount</label>
+            <div class="money-input"><span aria-hidden="true">£</span><input id="amount" name="amount" type="number" min="1" max="1000000" step="1" placeholder="For example, 50" required inputmode="decimal"></div>
+            <div class="panel-actions"><button class="button button-green next-button" type="button">Next</button></div>
+          </section>
+          <section class="question-panel" data-step="4" hidden>
+            <h1>Are you saving for children, too?</h1>
+            <div class="choice-grid choice-grid-2">
+              <label class="choice-card choice-large"><input type="radio" name="children" value="yes" required><span>Yes, I have children</span></label>
+              <label class="choice-card choice-large"><input type="radio" name="children" value="no" required><span>No</span></label>
+              <label class="choice-card choice-large"><input type="radio" name="children" value="prefer-not-to-say" required><span>Prefer not to say</span></label>
+            </div>
+            <div class="panel-actions"><button class="button button-green next-button" type="button">Next</button></div>
+          </section>
+          <section class="question-panel" data-step="5" hidden>
+            <h1>When might you want to use this money?</h1>
+            <div class="choice-grid choice-grid-2">
+              <label class="choice-card choice-large"><input type="radio" name="timeframe" value="soon" required><span>In the next year or two</span></label>
+              <label class="choice-card choice-large"><input type="radio" name="timeframe" value="later" required><span>In a few years or more</span></label>
+            </div>
+            <div class="panel-actions"><button class="button button-green" type="submit">Show me my options</button></div>
+          </section>
+          <p class="form-error" id="form-error" role="alert" hidden>Please answer this question to continue.</p>
+        </form>
+      </div>
+    </main>
+    <footer class="site-footer"><a class="brand brand-footer" href="/"><span class="brand-mark" aria-hidden="true">g</span><span>goodnest</span></a><span class="footer-disclaimer">Goodnest is an educational guide, not financial advice.</span></footer>
+  </body>
+</html>
